@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BloxCode Academy | Studio Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --studio-bg: #1B1D1E;
+            --studio-surface: #2D2F30;
+            --studio-border: #3F4142;
+            --roblox-blue: #00A2FF;
+            --roblox-green: #00E676;
+        }
+        body {
+            font-family: 'Fredoka', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            background-color: var(--studio-bg);
+            color: #ffffff;
+        }
+        .studio-card {
+            background: var(--studio-surface);
+            border: 1px solid var(--studio-border);
+            border-radius: 1rem;
+        }
+        .glass-header {
+            background: rgba(27, 29, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--studio-border);
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        @keyframes pulse-blue {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 162, 255, 0.4); }
+            50% { box-shadow: 0 0 20px 5px rgba(0, 162, 255, 0.2); }
+        }
+        .active-lesson {
+            animation: pulse-blue 2s infinite;
+        }
+        .path-line {
+            background: linear-gradient(to bottom, #3F4142, #00A2FF, #3F4142);
+            filter: drop-shadow(0 0 5px rgba(0, 162, 255, 0.5));
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+<body class="overflow-hidden">
+    <div id="root"></div>
+</body>
+</html>
