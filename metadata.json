@@ -1,5 +1,5 @@
 {
-  "name": "BloxCode Academy",
+  "name": "Roblox Dev Academy",
   "description": "A gamified, Duolingo-style mobile learning platform teaching Luau programming for Roblox to kids aged 8-14, featuring AI-powered tutoring and interactive challenges.",
   "requestFramePermissions": [
     "camera",

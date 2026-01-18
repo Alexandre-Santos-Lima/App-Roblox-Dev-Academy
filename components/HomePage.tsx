@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { UserProfile, Lesson, DifficultyLevel } from '../types';
-import { ALL_LEVELS } from '../constants';
+import { ALL_LEVELS, AUDIO_URLS } from '../constants';
 
 interface HomePageProps {
   user: UserProfile;
@@ -10,8 +10,35 @@ interface HomePageProps {
 
 const HomePage: React.FC<HomePageProps> = ({ user, onStartLesson }) => {
   const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>('beginner');
+  
+  // Audio Refs
+  const popAudio = useRef(new Audio(AUDIO_URLS.pop));
+  const lockedAudio = useRef(new Audio(AUDIO_URLS.lock));
+  const startAudio = useRef(new Audio(AUDIO_URLS.lesson_start));
 
   const modules = ALL_LEVELS[currentDifficulty];
+
+  const playSound = (type: 'pop' | 'lock' | 'start') => {
+    const audio = type === 'pop' ? popAudio.current 
+                : type === 'lock' ? lockedAudio.current 
+                : startAudio.current;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  };
+
+  const handleDifficultyChange = (level: DifficultyLevel) => {
+    playSound('pop');
+    setCurrentDifficulty(level);
+  };
+
+  const handleLessonSelect = (lesson: Lesson, isUnlocked: boolean) => {
+    if (!isUnlocked) {
+      playSound('lock');
+      return;
+    }
+    playSound('start');
+    onStartLesson(lesson);
+  };
 
   const tabs: { id: DifficultyLevel; label: string; icon: string; color: string }[] = [
     { id: 'beginner', label: 'Iniciante', icon: 'fa-seedling', color: '#00E676' },
@@ -26,7 +53,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, onStartLesson }) => {
         {tabs.map(tab => (
            <button
              key={tab.id}
-             onClick={() => setCurrentDifficulty(tab.id)}
+             onClick={() => handleDifficultyChange(tab.id)}
              className={`flex-1 py-3 rounded-xl flex flex-col items-center gap-1 transition-all border-2 ${
                currentDifficulty === tab.id 
                  ? 'bg-[#2D2F30] border-opacity-100' 
@@ -113,8 +140,7 @@ const HomePage: React.FC<HomePageProps> = ({ user, onStartLesson }) => {
                   style={{ transform: `translateX(${xOffsetValue}px)` }}
                 >
                   <button
-                    disabled={!isUnlocked}
-                    onClick={() => onStartLesson(lesson)}
+                    onClick={() => handleLessonSelect(lesson, isUnlocked)}
                     className={`w-[4.5rem] h-[4.5rem] rounded-[1.5rem] flex items-center justify-center relative transition-all border-[6px] shadow-xl ${
                       isCompleted 
                         ? 'bg-[#1B1D1E] border-[#00E676] opacity-100' 

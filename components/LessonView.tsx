@@ -1,10 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
-import { Lesson, BloxCharacter } from '../types';
+import React, { useState, useEffect, useRef } from 'react';
+import { Lesson, BloxCharacter, UserProfile } from '../types';
 import { geminiService } from '../services/geminiService';
+import { AUDIO_URLS } from '../constants';
 
 interface LessonViewProps {
   lesson: Lesson;
+  userLives: number;
+  onUpdateUser: (updates: Partial<UserProfile>) => void;
   onClose: () => void;
   onComplete: (points: number) => void;
 }
@@ -16,16 +19,18 @@ const CHARACTER_CONFIG: Record<BloxCharacter, { color: string, icon: string, nam
   spark: { color: '#9C27B0', icon: 'fa-magic', name: 'Spark' }
 };
 
-const LessonView: React.FC<LessonViewProps> = ({ lesson, onClose, onComplete }) => {
+const LessonView: React.FC<LessonViewProps> = ({ lesson, userLives, onUpdateUser, onClose, onComplete }) => {
   const [step, setStep] = useState<'content' | 'task' | 'success'>('content');
   const [userCode, setUserCode] = useState('');
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [showConceptReminder, setShowConceptReminder] = useState(false);
-  const [hintsUsed, setHintsUsed] = useState(0);
-  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [isGameOver, setIsGameOver] = useState(false);
+  
+  const audioCorrect = useRef(new Audio(AUDIO_URLS.correct));
+  const audioWrong = useRef(new Audio(AUDIO_URLS.wrong));
+  const audioComplete = useRef(new Audio(AUDIO_URLS.complete));
 
   const charConfig = CHARACTER_CONFIG[lesson.character || 'bit'];
 
@@ -34,12 +39,12 @@ const LessonView: React.FC<LessonViewProps> = ({ lesson, onClose, onComplete }) 
     setUserCode('');
     setSelectedOption(null);
     setAiFeedback(null);
-    setHintsUsed(0);
-    setAiExplanation(null);
+    setIsGameOver(false);
   }, [lesson.id]);
 
   const handleNext = () => {
     if (step === 'content' && (lesson.type === 'code' || lesson.type === 'quiz')) {
+      // Audio de clique suave (opcional)
       setStep('task');
     } else if (step === 'success') {
       onComplete(lesson.points);
@@ -48,15 +53,38 @@ const LessonView: React.FC<LessonViewProps> = ({ lesson, onClose, onComplete }) 
     }
   };
 
+  const handleMistake = () => {
+    audioWrong.current.play().catch(() => {});
+    setShowError(true);
+    setTimeout(() => setShowError(false), 800);
+    
+    const newLives = userLives - 1;
+    if (userLives === 5) {
+       onUpdateUser({ lives: newLives, lastHeartRegen: Date.now() });
+    } else {
+       onUpdateUser({ lives: newLives });
+    }
+
+    if (newLives <= 0) {
+      setIsGameOver(true);
+    }
+  };
+
+  const handleSuccess = () => {
+    // Toca o som de vitória imediatamente ao acertar
+    audioComplete.current.play().catch(() => {});
+    triggerConfetti();
+    setStep('success');
+  };
+
   const checkResult = async () => {
     setAiFeedback(null);
     if (lesson.type === 'quiz') {
       if (selectedOption === lesson.correctOption) {
-        triggerConfetti();
-        setStep('success');
+        audioCorrect.current.play().catch(() => {});
+        handleSuccess();
       } else {
-        setShowError(true);
-        setTimeout(() => setShowError(false), 800);
+        handleMistake();
       }
       return;
     }
@@ -67,16 +95,15 @@ const LessonView: React.FC<LessonViewProps> = ({ lesson, onClose, onComplete }) 
       setIsLoading(false);
       
       if (result.isCorrect) {
-        triggerConfetti();
-        setStep('success');
+        audioCorrect.current.play().catch(() => {});
+        handleSuccess();
       } else {
         setAiFeedback(result.feedback);
-        setShowError(true);
-        setTimeout(() => setShowError(false), 500);
+        handleMistake();
       }
       return;
     }
-    setStep('success');
+    handleSuccess();
   };
 
   const triggerConfetti = () => {
@@ -89,12 +116,23 @@ const LessonView: React.FC<LessonViewProps> = ({ lesson, onClose, onComplete }) 
     });
   };
 
-  const askBit = async () => {
-    setIsLoading(true);
-    const explanation = await geminiService.getExplanation(lesson.title);
-    setAiExplanation(explanation);
-    setIsLoading(false);
-  };
+  if (isGameOver) {
+    return (
+      <div className="fixed inset-0 bg-black/90 z-[60] flex flex-col items-center justify-center p-6 animate-in zoom-in-95">
+        <div className="bg-[#2D2F30] border-2 border-[#FF5252] rounded-3xl p-8 text-center max-w-sm shadow-[0_0_50px_rgba(255,82,82,0.3)]">
+          <i className="fas fa-heart-crack text-8xl text-[#FF5252] mb-6 animate-pulse"></i>
+          <h2 className="text-3xl font-black text-white mb-2">Acabaram as vidas!</h2>
+          <p className="text-[#ABB2BF] mb-8">Você errou muitas vezes. Espere recarregar para tentar novamente.</p>
+          <button 
+            onClick={onClose}
+            className="w-full bg-[#FF5252] text-white font-black py-4 rounded-2xl uppercase tracking-widest hover:bg-red-600 transition-colors"
+          >
+            Sair da Aula
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-[#1B1D1E] z-50 flex flex-col animate-in slide-in-from-bottom duration-300">
@@ -113,9 +151,12 @@ const LessonView: React.FC<LessonViewProps> = ({ lesson, onClose, onComplete }) 
             }}
           />
         </div>
-        <div className="flex items-center gap-2 bg-[#1B1D1E] px-3 py-1 rounded-lg border border-[#3F4142]">
-           <i className={`fas ${charConfig.icon} text-[10px]`} style={{ color: charConfig.color }}></i>
-           <span className="text-[10px] font-black text-[#ABB2BF] uppercase tracking-tighter">{lesson.points} XP</span>
+        <div className="flex items-center gap-3">
+           {/* Hearts in Lesson */}
+           <div className="flex items-center gap-1">
+              <i className="fas fa-heart text-[#FF5252] animate-pulse"></i>
+              <span className="font-black text-[#FF5252]">{userLives}</span>
+           </div>
         </div>
       </div>
 

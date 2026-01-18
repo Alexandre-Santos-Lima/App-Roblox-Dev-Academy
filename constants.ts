@@ -1,4 +1,47 @@
-import { CourseModule, Lesson, BloxCharacter } from './types';
+
+import { CourseModule, Lesson, BloxCharacter, Achievement } from './types';
+
+export const MAX_LIVES = 5;
+export const HEART_REGEN_MINUTES = 15; // Tempo para regenerar 1 vida
+export const HEART_REGEN_MS = HEART_REGEN_MINUTES * 60 * 1000;
+
+// Sons (URLs diretas de CDN para SFX curtos e leves)
+export const AUDIO_URLS = {
+  correct: 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3?filename=success-1-6297.mp3',
+  wrong: 'https://cdn.pixabay.com/download/audio/2022/03/10/audio_c8c8a73467.mp3?filename=wrong-answer-126515.mp3',
+  complete: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d14e304853.mp3?filename=success-fanfare-trumpets-6185.mp3',
+  click: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_2d8293708e.mp3?filename=ui-click-43196.mp3',
+  bgm: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3', // Música Lo-Fi suave
+  pop: 'https://cdn.pixabay.com/download/audio/2022/03/24/audio_c8b256c702.mp3?filename=pop-2-158229.mp3', // Som para navegação/abas
+  lock: 'https://cdn.pixabay.com/download/audio/2022/01/07/audio_0313175402.mp3?filename=error-126627.mp3', // Som de item bloqueado
+  lesson_start: 'https://cdn.pixabay.com/download/audio/2022/03/19/audio_9467727a20.mp3?filename=game-start-6104.mp3' // Som ao entrar na atividade
+};
+
+// Avatares Padrão
+export const DEFAULT_AVATARS = [
+  "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Blox",
+  "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Code",
+  "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Ninja",
+  "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Robo",
+  "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Pixel",
+  "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Glitch",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Dev1",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Dev2"
+];
+
+// Sistema de Conquistas (10 Itens, 3 Níveis cada)
+export const ACHIEVEMENTS: Achievement[] = [
+  { id: 'first_steps', title: 'Primeiros Passos', description: 'Lições completadas', icon: 'fa-shoe-prints', tiers: [1, 10, 50] },
+  { id: 'bug_hunter', title: 'Caçador de Bugs', description: 'Códigos corrigidos', icon: 'fa-bug', tiers: [5, 20, 100] },
+  { id: 'streak_master', title: 'Imparável', description: 'Dias seguidos (Streak)', icon: 'fa-fire', tiers: [3, 7, 30] },
+  { id: 'xp_titan', title: 'Titã de XP', description: 'XP total acumulado', icon: 'fa-bolt', tiers: [100, 1000, 5000] },
+  { id: 'quiz_whiz', title: 'Sabe-Tudo', description: 'Acertos em Quizzes', icon: 'fa-brain', tiers: [5, 25, 100] },
+  { id: 'builder', title: 'Construtor', description: 'Objetos manipulados', icon: 'fa-hammer', tiers: [10, 50, 200] },
+  { id: 'script_kiddie', title: 'Scripter', description: 'Linhas de código escritas', icon: 'fa-terminal', tiers: [10, 100, 1000] },
+  { id: 'gem_hoarder', title: 'Rico', description: 'Gemas coletadas', icon: 'fa-gem', tiers: [50, 500, 2000] },
+  { id: 'explorer', title: 'Explorador', description: 'Zonas desbloqueadas', icon: 'fa-map', tiers: [1, 3, 5] },
+  { id: 'perfectionist', title: 'Perfeccionista', description: 'Lições sem errar', icon: 'fa-star', tiers: [1, 10, 50] }
+];
 
 // Helper para criar lições rapidamente e garantir 20 itens por zona
 const createLesson = (
@@ -191,10 +234,17 @@ export const ALL_LEVELS = {
 export const INITIAL_USER: any = {
   name: "Novato Blox",
   email: "",
-  xp: 0,
-  level: 1,
-  streak: 0,
-  gems: 0,
-  unlockedLessons: ['b_z1_1'], // Começa na primeira do básico
-  avatarUrl: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Blox"
+  xp: 120,
+  level: 2,
+  streak: 3,
+  gems: 50,
+  lives: 5, // Valor Padrão
+  lastHeartRegen: Date.now(), // Timestamp atual
+  unlockedLessons: ['b_z1_1'], 
+  avatarUrl: "https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Blox",
+  achievementsProgress: {
+    'first_steps': 1,
+    'streak_master': 3,
+    'xp_titan': 120
+  }
 };

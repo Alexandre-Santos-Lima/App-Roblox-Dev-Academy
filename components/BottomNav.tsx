@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { AppView } from '../types';
+import { AUDIO_URLS } from '../constants';
 
 interface BottomNavProps {
   currentView: AppView;
@@ -8,6 +9,8 @@ interface BottomNavProps {
 }
 
 const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
+  const popAudio = useRef(new Audio(AUDIO_URLS.pop));
+
   const navItems = [
     { view: AppView.HOME, icon: 'fa-cubes', label: 'Scripts' },
     { view: AppView.LEADERBOARD, icon: 'fa-bolt', label: 'Arena' },
@@ -15,12 +18,18 @@ const BottomNav: React.FC<BottomNavProps> = ({ currentView, setView }) => {
     { view: AppView.PROFILE, icon: 'fa-user-gear', label: 'Perfil' },
   ];
 
+  const handleNavClick = (view: AppView) => {
+    popAudio.current.currentTime = 0;
+    popAudio.current.play().catch(() => {});
+    setView(view);
+  };
+
   return (
     <nav className="bg-[#1B1D1E]/95 backdrop-blur-md border-t border-[#3F4142] flex justify-around items-center py-3 absolute bottom-0 w-full z-20">
       {navItems.map((item) => (
         <button
           key={item.view}
-          onClick={() => setView(item.view)}
+          onClick={() => handleNavClick(item.view)}
           className={`flex flex-col items-center gap-1.5 transition-all group ${
             currentView === item.view ? 'text-[#00A2FF]' : 'text-[#ABB2BF]'
           }`}

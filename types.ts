@@ -9,6 +9,14 @@ export enum AppView {
   LEADERBOARD = 'LEADERBOARD'
 }
 
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  tiers: number[]; // Ex: [1, 10, 50] para Bronze, Prata, Ouro
+}
+
 export interface UserProfile {
   name: string;
   email: string;
@@ -16,8 +24,11 @@ export interface UserProfile {
   level: number;
   streak: number;
   gems: number;
+  lives: number; // Novas Vidas
+  lastHeartRegen: number; // Timestamp da última regeneração ou uso
   unlockedLessons: string[];
   avatarUrl: string;
+  achievementsProgress: Record<string, number>; // id -> valor atual
 }
 
 export type BloxCharacter = 'bit' | 'bella' | 'captain' | 'spark';
